@@ -11,13 +11,13 @@ directory = "./dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "carrush-db"
-database_id = "REPLACE_WITH_D1_ID"   # GitHub Actions 가 자동 생성/치환
+database_id = "7432da2b-1623-4df5-bf05-14d0911c2480"   # GitHub Actions 가 자동 생성/치환
 migrations_dir = "migrations"
 
 # KV: 세션, 점수표 설정
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_KV_ID"            # GitHub Actions 가 자동 생성/치환
+id = "46cae5db2ce84454b393722ad239f438"            # GitHub Actions 가 자동 생성/치환
 
 # Durable Objects (SQLite-backed): 엘칭방 실시간 군체크
 [[durable_objects.bindings]]
