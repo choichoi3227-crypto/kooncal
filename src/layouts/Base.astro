@@ -1,0 +1,62 @@
+---
+interface Props { title: string; desc: string; path?: string; noindex?: boolean; ld?: object[] }
+const { title, desc, path = '/', noindex = false, ld = [] } = Astro.props;
+const url = new URL(path, Astro.site).href;
+const s = Astro.locals.sess;
+---
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{title}</title>
+  <meta name="description" content={desc} />
+  <link rel="canonical" href={url} />
+  <meta name="robots" content={noindex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large'} />
+  <meta name="theme-color" content="#12161f" />
+  <meta property="og:type" content="website" /><meta property="og:locale" content="ko_KR" />
+  <meta property="og:site_name" content="카러플 군 계산기" /><meta property="og:title" content={title} />
+  <meta property="og:description" content={desc} /><meta property="og:url" content={url} />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o)} />)}
+  <style is:global>
+    :root{--bg:#12161f;--card:#1b2130;--line:#2c3550;--tx:#e9edf7;--mut:#8f9bb8;--ac:#ffc83d;--b:#4aa8ff;--r:#ff6b6b}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+    a{color:var(--ac)}header,main,footer{max-width:880px;margin:0 auto;padding:0 16px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:14px;padding-bottom:14px;flex-wrap:wrap}
+    .logo{font-weight:800;font-size:1.15rem;color:var(--tx);text-decoration:none}.logo b{color:var(--ac)}
+    nav{display:flex;gap:14px;align-items:center;font-size:.95rem}nav a{color:var(--mut);text-decoration:none}nav a:hover,nav a[aria-current]{color:var(--ac)}
+    h1{font-size:clamp(1.6rem,5vw,2.3rem);line-height:1.25;margin:.4em 0 .2em}h2{font-size:1.2rem;margin:1.6em 0 .5em}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:560px){.grid{grid-template-columns:1fr}}
+    button,select,input{font:inherit;color:var(--tx);background:#0f131c;border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+    button{cursor:pointer;background:var(--ac);color:#1a1400;border:0;font-weight:700}button.g{background:#0f131c;color:var(--tx);border:1px solid var(--line)}
+    :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+    .mut{color:var(--mut);font-size:.9rem}.row{display:flex;gap:8px;align-items:center;margin:6px 0}.row label{width:64px;color:var(--mut)}
+    table{width:100%;border-collapse:collapse}td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
+    header{border-bottom:0}.flag{height:10px;background:conic-gradient(var(--ac) 25%,#0f131c 0 50%,var(--ac) 0 75%,#0f131c 0) 0 0/20px 20px;opacity:.9}
+    h1{letter-spacing:-.02em;font-weight:900}.chip{display:inline-flex;gap:4px;align-items:center;background:#0f131c;border:1px solid var(--line);border-radius:99px;padding:2px 4px 2px 12px;margin:3px}.x{padding:0 8px;border-radius:99px}
+    .win{color:var(--ac)}.rk{display:inline-block;min-width:2.2em;text-align:center;border-radius:6px;background:#0f131c;border:1px solid var(--line);padding:0 6px;font-weight:700}
+    @media(prefers-reduced-motion:no-preference){button{transition:transform .08s}button:active{transform:scale(.97)}}
+    footer{padding-top:32px;padding-bottom:40px;color:var(--mut);font-size:.85rem}
+  </style>
+</head>
+<body>
+  <div class="flag" aria-hidden="true"></div>
+  <header>
+    <a class="logo" href="/">카러플 <b>군 계산기</b></a>
+    <nav aria-label="주 메뉴">
+      <a href="/" aria-current={path === '/' ? 'page' : undefined}>군표</a>
+      <a href="/room" aria-current={path === '/room' ? 'page' : undefined}>엘칭방 군체크</a>
+      {s?.role === 'admin' && <a href="/admin">관리</a>}
+      {s ? <><span class="mut">{s.id}</span><a href="#" id="logout">로그아웃</a></> : <a href="/login">로그인</a>}
+    </nav>
+  </header>
+  <main><slot /></main>
+  <footer>© 카러플 군 계산기 · 비공식 팬 사이트이며 넥슨/카트라이더 러쉬플러스와 무관합니다.</footer>
+  <script is:inline>
+    document.getElementById('logout')?.addEventListener('click',async e=>{e.preventDefault();await fetch('/api/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'logout'})});location.href='/'})
+  </script>
+</body>
+</html>

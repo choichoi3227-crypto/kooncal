@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+if (Astro.locals.sess) return Astro.redirect('/');
+---
+<Base title="로그인 - 카러플 군 계산기" desc="카러플 군 계산기 로그인 및 회원가입" path="/login" noindex>
+  <h1>로그인 / 회원가입</h1>
+  <div class="card" style="max-width:380px">
+    <div class="row"><label for="id">아이디</label><input id="id" autocomplete="username" maxlength="16" /></div>
+    <div class="row"><label for="pw">비밀번호</label><input id="pw" type="password" autocomplete="current-password" maxlength="64" /></div>
+    <p id="err" role="alert" style="color:var(--r);min-height:1.4em"></p>
+    <button data-a="login">로그인</button> <button class="g" data-a="signup">회원가입</button>
+  </div>
+  <script>
+    document.querySelectorAll<HTMLButtonElement>('[data-a]').forEach(b => b.onclick = async () => {
+      const r = await fetch('/api/auth', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ action: b.dataset.a, id: (document.getElementById('id') as HTMLInputElement).value, pw: (document.getElementById('pw') as HTMLInputElement).value }) });
+      if (r.ok) location.href = '/'; else document.getElementById('err')!.textContent = (await r.json()).error;
+    });
+  </script>
+</Base>

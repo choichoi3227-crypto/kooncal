@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+const s = Astro.locals.sess;
+const title = '엘칭방 군체크 - 카러플 군 계산기';
+const desc = '엘리트 클럽 엘칭방의 카러플 군전 참가 여부를 실시간으로 체크하세요. 참가·미정·불참을 누르면 모두에게 바로 반영됩니다.';
+---
+<Base {title} {desc} path="/room">
+  <h1>엘칭방 군체크</h1>
+  <p class="mut">군전 참가 여부를 눌러 알려주세요. 5초마다 자동으로 갱신됩니다.</p>
+  {s ? (
+    <div class="card"><button data-s="in">참가</button> <button class="g" data-s="maybe">미정</button> <button class="g" data-s="out">불참</button>
+      {s.role === 'admin' && <button class="g" id="reset" style="float:right">전체 초기화</button>}</div>
+  ) : <div class="card">군체크는 <a href="/login">로그인</a> 후 참여할 수 있습니다.</div>}
+  <div class="grid" id="board" data-admin={s?.role === 'admin' ? '1' : ''}>
+    <div class="card"><h2 style="margin-top:0">참가 <span id="n-in"></span></h2><ul id="in"></ul></div>
+    <div class="card"><h2 style="margin-top:0">미정 <span id="n-maybe"></span></h2><ul id="maybe"></ul><h2>불참 <span id="n-out"></span></h2><ul id="out"></ul></div>
+  </div>
+  <script>
+    const board = document.getElementById('board')!, admin = !!board.dataset.admin;
+    async function load() {
+      const rows: {uid:string;status:string}[] = await (await fetch('/api/check')).json();
+      for (const k of ['in','maybe','out']) {
+        const ul = document.getElementById(k)!; ul.replaceChildren();
+        const list = rows.filter(r => r.status === k);
+        document.getElementById('n-'+k)!.textContent = `(${list.length})`;
+        for (const r of list) { const li = document.createElement('li'); li.textContent = r.uid;
+          if (admin) { const x = document.createElement('button'); x.textContent='×'; x.className='g'; x.style.cssText='padding:0 8px;margin-left:8px'; x.onclick = async()=>{await post({op:'kick',uid:r.uid})}; li.append(x); }
+          ul.append(li); }
+      }
+    }
+    async function post(b: object) { await fetch('/api/check', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(b) }); load(); }
+    document.querySelectorAll<HTMLButtonElement>('[data-s]').forEach(b => b.onclick = () => post({ status: b.dataset.s }));
+    document.getElementById('reset')?.addEventListener('click', () => confirm('모든 군체크를 초기화할까요?') && post({ op: 'reset' }));
+    load(); setInterval(() => document.hidden || load(), 5000);
+  </script>
+</Base>
